@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VMSTRØMLINET</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand-kicker">VMSTRØMLINET</div>
+        <h1>Strømlinets store VM-konkurrence</h1>
+      </div>
+      <nav class="topnav" id="topnav"></nav>
+      <div class="topbar-right">
+        <div id="sessionInfo" class="session-info"></div>
+      </div>
+    </header>
+
+    <main id="app"></main>
+  </div>
+
+  <template id="homeTemplate">
+    <section class="page hero-page card">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow">Intern konkurrence</p>
+          <h2>Gæt resultater, saml point og vind æren</h2>
+          <p class="lead">
+            Velkommen til VMSTRØMLINET. Her kan du indsende dine bud på gruppespillet,
+            knockoutfasen og en tip-en-13’er.
+          </p>
+          <div class="chips">
+            <span class="chip">+3 point for korrekt 1/X/2</span>
+            <span class="chip">+2 point for korrekt score</span>
+            <span class="chip">+2 point for korrekt viderehold</span>
+            <span class="chip">+5 point for VM-vinder</span>
+          </div>
+        </div>
+        <div class="countdown-panel">
+          <h3>Næste deadline</h3>
+          <div id="deadlineLabel" class="muted">Ikke sat endnu</div>
+          <div id="countdown" class="countdown">-- : -- : -- : --</div>
+          <p class="small muted">
+            Gruppespil og tip-en-13’er låses ved første kampstart. Knockoutspillet låses ved den deadline admin sætter.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="page two-col-grid">
+      <article class="card">
+        <h3>Regler</h3>
+        <ul class="rules-list">
+          <li>Bud på gruppespillet skal afleveres før første kamp i slutrunden.</li>
+          <li>Bud på tip-en-13’er har samme deadline som gruppespillet.</li>
+          <li>Knockoutspillet åbnes af admin, når gruppespillet er afsluttet.</li>
+          <li>Helt korrekt kampresultat giver samlet 5 point.</li>
+          <li>Kun brugere med indsendt skema vises på ranglisten.</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>Sådan deltager du</h3>
+        <ol class="rules-list">
+          <li>Opret en bruger.</li>
+          <li>Vælg din afdeling.</li>
+          <li>Udfyld gruppespillet, 13’eren og senere knockouttræet.</li>
+          <li>Følg ranglisten løbende.</li>
+        </ol>
+      </article>
+    </section>
+  </template>
+
+  <template id="authTemplate">
+    <section class="page auth-grid">
+      <article class="card auth-card">
+        <h2>Log ind</h2>
+        <form id="loginForm" class="form-grid">
+          <label>
+            E-mail eller brugernavn
+            <input type="text" name="identifier" required />
+          </label>
+          <label>
+            Kodeord
+            <input type="password" name="password" required />
+          </label>
+          <button class="btn primary" type="submit">Log ind</button>
+        </form>
+      </article>
+
+      <article class="card auth-card">
+        <h2>Opret bruger</h2>
+        <form id="registerForm" class="form-grid">
+          <label>
+            Fulde navn
+            <input type="text" name="name" required />
+          </label>
+          <label>
+            E-mail
+            <input type="email" name="email" required />
+          </label>
+          <label>
+            Afdeling
+            <select name="departmentId" id="registerDepartmentSelect" required></select>
+          </label>
+          <label>
+            Kodeord
+            <input type="password" name="password" minlength="4" required />
+          </label>
+          <button class="btn primary" type="submit">Opret bruger</button>
+        </form>
+      </article>
+    </section>
+  </template>
+
+  <template id="profileTemplate">
+    <section class="page card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Min profil</p>
+          <h2>Ret dine oplysninger</h2>
+        </div>
+      </div>
+      <form id="profileForm" class="form-grid two-col">
+        <label>
+          Fulde navn
+          <input type="text" name="name" required />
+        </label>
+        <label>
+          E-mail
+          <input type="email" name="email" required />
+        </label>
+        <label>
+          Afdeling
+          <select name="departmentId" id="profileDepartmentSelect" required></select>
+        </label>
+        <label>
+          Nyt kodeord
+          <input type="password" name="password" placeholder="Lad stå tomt for uændret" />
+        </label>
+        <label class="full-width">
+          Profilbillede
+          <input type="file" id="profileImageInput" accept="image/*" />
+        </label>
+        <div class="profile-preview full-width">
+          <img id="profilePreview" class="avatar xl" src="" alt="Profilbillede" />
+        </div>
+        <div class="actions full-width">
+          <button class="btn primary" type="submit">Gem profil</button>
+        </div>
+      </form>
+    </section>
+  </template>
+
+  <template id="groupTemplate">
+    <section class="page card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Gruppespil</p>
+          <h2>Indsend dine bud</h2>
+        </div>
+        <div class="status-badge" id="groupLockStatus"></div>
+      </div>
+      <form id="groupPredictionsForm">
+        <div id="groupMatchesContainer" class="match-list"></div>
+        <div class="actions sticky-actions">
+          <button class="btn primary" type="submit">Gem gruppespilsbud</button>
+        </div>
+      </form>
+    </section>
+  </template>
+
+  <template id="knockoutTemplate">
+    <section class="page card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Knockout</p>
+          <h2>Vælg hele turneringstræet</h2>
+        </div>
+        <div class="status-badge" id="knockoutLockStatus"></div>
+      </div>
+      <form id="knockoutForm">
+        <div id="knockoutContainer" class="bracket-grid"></div>
+        <div class="actions sticky-actions">
+          <button class="btn primary" type="submit">Gem knockout-bud</button>
+        </div>
+      </form>
+    </section>
+  </template>
+
+  <template id="quizTemplate">
+    <section class="page card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Tip en 13’er</p>
+          <h2>Svar på spørgsmålene</h2>
+        </div>
+        <div class="status-badge" id="quizLockStatus"></div>
+      </div>
+      <form id="quizForm">
+        <div id="quizContainer" class="quiz-list"></div>
+        <div class="actions sticky-actions">
+          <button class="btn primary" type="submit">Gem 13’er</button>
+        </div>
+      </form>
+    </section>
+  </template>
+
+  <template id="leaderboardTemplate">
+    <section class="page two-col-grid">
+      <article class="card">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Rangliste</p>
+            <h2>Spillerstilling</h2>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="leaderboardTable">
+            <thead>
+              <tr>
+                <th>Plac.</th>
+                <th>Profil</th>
+                <th>Navn</th>
+                <th>Afdeling</th>
+                <th>Rigtige resultater</th>
+                <th>Korrekte scorer</th>
+                <th>Bonus</th>
+                <th>Point</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Afdelinger</p>
+            <h2>Afdelingsrangliste</h2>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="departmentTable">
+            <thead>
+              <tr>
+                <th>Plac.</th>
+                <th>Afdeling</th>
+                <th>Spillere</th>
+                <th>Gns. point</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </template>
+
+  <template id="bonusTemplate">
+    <section class="page card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Bonuspoint</p>
+          <h2>Hemmelige bonusser</h2>
+        </div>
+      </div>
+      <p class="lead">
+        Her kan du se hvor mange achievements der findes, hvor mange du har fundet,
+        og hvor mange bonuspoint de giver.
+      </p>
+      <div id="bonusOverview" class="simple-list"></div>
+    </section>
+  </template>
+
+  <template id="adminTemplate">
+    <section class="page admin-grid">
+      <article class="card">
+        <h2>Turneringsindstillinger</h2>
+        <form id="settingsForm" class="form-grid">
+          <label>
+            Deadline gruppespil / 13’er
+            <input type="datetime-local" name="groupDeadline" />
+          </label>
+          <label>
+            Deadline knockout
+            <input type="datetime-local" name="knockoutDeadline" />
+          </label>
+          <label class="inline-check">
+            <input type="checkbox" name="knockoutEnabled" />
+            Knockoutspillet er åbent
+          </label>
+          <button class="btn primary" type="submit">Gem indstillinger</button>
+        </form>
+      </article>
+
+      <article class="card">
+        <h2>Afdelinger</h2>
+        <form id="departmentForm" class="inline-form">
+          <input type="text" name="name" placeholder="Ny afdeling" required />
+          <button class="btn" type="submit">Tilføj</button>
+        </form>
+        <div id="departmentList" class="simple-list"></div>
+      </article>
+
+      <article class="card">
+        <h2>Gruppespil – kampe</h2>
+        <form id="matchForm" class="form-grid two-col compact">
+          <label>
+            Hold 1
+            <input type="text" name="homeTeam" required />
+          </label>
+          <label>
+            Hold 2
+            <input type="text" name="awayTeam" required />
+          </label>
+          <label>
+            Dato og tid
+            <input type="datetime-local" name="kickoff" required />
+          </label>
+          <label>
+            Gruppe / runde
+            <input type="text" name="stage" placeholder="Gruppe A" required />
+          </label>
+          <button class="btn primary full-width" type="submit">Opret kamp</button>
+        </form>
+        <div id="adminMatchList" class="simple-list"></div>
+      </article>
+
+      <article class="card">
+        <h2>Gruppespil – resultater</h2>
+        <div id="resultsList" class="simple-list"></div>
+      </article>
+
+      <article class="card">
+        <h2>Knockout – kampe</h2>
+        <form id="knockoutMatchForm" class="form-grid two-col compact">
+          <label>
+            Kamp-id
+            <input type="text" name="slot" placeholder="QF1 / SF1 / F" required />
+          </label>
+          <label>
+            Runde
+            <select name="round" required>
+              <option value="Ottendedelsfinale">Ottendedelsfinale</option>
+              <option value="Kvartfinale">Kvartfinale</option>
+              <option value="Semifinale">Semifinale</option>
+              <option value="Finale">Finale</option>
+            </select>
+          </label>
+          <label>
+            Visningstekst venstre side
+            <input type="text" name="labelA" placeholder="Vinder AF1" required />
+          </label>
+          <label>
+            Visningstekst højre side
+            <input type="text" name="labelB" placeholder="Vinder AF2" required />
+          </label>
+          <button class="btn primary full-width" type="submit">Opret knockoutkamp</button>
+        </form>
+        <div id="adminKnockoutList" class="simple-list"></div>
+      </article>
+
+      <article class="card">
+        <h2>Knockout – rigtige vindere</h2>
+        <div id="knockoutResultsList" class="simple-list"></div>
+      </article>
+
+      <article class="card">
+        <h2>Tip en 13’er</h2>
+        <form id="quizQuestionForm" class="form-grid compact">
+          <label>
+            Spørgsmål
+            <input type="text" name="question" required />
+          </label>
+         <div class="full-width">
+  <label>Svarmuligheder</label>
+  <div id="quizOptionsBuilder" class="simple-list"></div>
+  <div class="actions" style="margin-top:10px;">
+    <button class="btn" type="button" id="addQuizOptionBtn">+ Tilføj svarmulighed</button>
+  </div>
+</div>
+          <button class="btn primary" type="submit">Tilføj spørgsmål</button>
+        </form>
+        <div id="quizAdminList" class="simple-list"></div>
+      </article>
+
+      <article class="card">
+        <h2>Brugerstyring</h2>
+        <div id="userAdminList" class="simple-list"></div>
+      </article>
+    </section>
+  </template>
+
+  <div id="toastContainer" class="toast-container"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
